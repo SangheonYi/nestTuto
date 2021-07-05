@@ -2,9 +2,11 @@ import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserRepository } from './users.repository';
-import { UserEntity } from './entities/user.entity';
-import { getRepository } from 'typeorm';
+import { UserEntity } from './entities/test-user.entity';
+import { DeleteResult, getRepository } from 'typeorm';
 import { validate } from 'class-validator';
+import { UsernameAlreadyExistException } from './exceptions/username-already-exist-exception';
+import { EmailAlreadyExistException } from './exceptions/email-already-exist-exception';
 
 @Injectable()
 export class UsersService {
@@ -13,7 +15,7 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto) {
     const { username, email, password } = createUserDto;
-    const getByUserName = getRepository(UserEntity)
+    /* const getByUserName = getRepository(UserEntity)
       .createQueryBuilder('user')
       .where('user.username = :username', { username });
 
@@ -36,10 +38,17 @@ export class UsersService {
         { message: 'Input data validation falied', error },
         HttpStatus.BAD_REQUEST,
       );
+    } */
+    const thisUser = this.userRepository.findOne({ username: username });
+    if (thisUser) {
+      const error = `UserName ${username} is already exist`;
+      throw new UsernameAlreadyExistException(error)
     }
-    // const thisUser = this.userRepository.findOne({ username: username });
-    // const thisEmail = this.userRepository.findOne({ email: email });
-
+    const thisEmail = this.userRepository.findOne({ email: email });
+if (thisEmail) {
+      const error = "Email is already exist";
+      throw new EmailAlreadyExistException(error)
+    }
     // create new user
     let newUser = new UserEntity();
     newUser.email = email;
@@ -53,12 +62,11 @@ export class UsersService {
         HttpStatus.BAD_REQUEST,
       );
     } else {
-      return await this.userRepository.save(newUser).then((v) => {
-        return {
-          id: v.id,
-          email: v.email,
-        };
-      });
+      const userEntity = await this.userRepository.save(newUser).then((v) => v)
+      return {
+        id: userEntity.id,
+        emaiil: userEntity.email
+      };
     }
   }
 
@@ -67,8 +75,11 @@ export class UsersService {
   }
 
   async findOne(id: number) {
-    const tmp = await this.userRepository.findOne(id);
-    console.log(tmp);
+    const tmp = await this.userRepository.findOne(id).then( v =>
+      console.log(`✅`)
+      )
+      .catch( reason => console.log(reason));
+      console.log(tmp)
     return `This action returns a #${id} user`;
   }
 
@@ -76,7 +87,11 @@ export class UsersService {
     return `This action updates a #${id} user`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: number) {
+    return await this.userRepository.delete({ id });
+  }
+
+  async removeEmail(email: string): Promise<DeleteResult> {
+    return await this.userRepository.delete({ email });
   }
 }

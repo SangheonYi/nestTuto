@@ -1,7 +1,7 @@
 import { BeforeInsert, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import * as argon2 from 'argon2';
 
-@Entity('user')
+@Entity('test_user')
 export class UserEntity {
   @PrimaryGeneratedColumn()
   id: number;

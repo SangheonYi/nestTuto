@@ -9,6 +9,7 @@ export class UsersController {
 
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
+    console.log(`controller got ${createUserDto.username}`)
     return this.usersService.create(createUserDto);
   }
 
@@ -29,6 +30,13 @@ export class UsersController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
+    console.log("id❗️")
     return this.usersService.remove(+id);
+  }
+  @Delete('')
+  removeEmail(@Body('email') email: string) {
+    console.log("email❗️")
+
+    return this.usersService.removeEmail(email);
   }
 }
