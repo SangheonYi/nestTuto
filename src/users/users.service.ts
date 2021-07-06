@@ -39,12 +39,12 @@ export class UsersService {
         HttpStatus.BAD_REQUEST,
       );
     } */
-    const thisUser = this.userRepository.findOne({ username: username });
+    const thisUser = await this.userRepository.findOne({ username: username });
     if (thisUser) {
       const error = `UserName ${username} is already exist`;
       throw new UsernameAlreadyExistException(error)
     }
-    const thisEmail = this.userRepository.findOne({ email: email });
+    const thisEmail = await this.userRepository.findOne({ email: email });
 if (thisEmail) {
       const error = "Email is already exist";
       throw new EmailAlreadyExistException(error)
